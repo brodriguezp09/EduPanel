@@ -1,0 +1,5 @@
+# users/forms.py
+from django import forms
+
+class CargaMasivaForm(forms.Form):
+    csv_file = forms.FileField(label="Fichero CSV")
