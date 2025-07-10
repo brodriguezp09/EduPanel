@@ -9,7 +9,7 @@ from django.urls import path
 from django.utils.text import slugify
 from django.contrib import messages
 
-from .models import CustomUser, Role
+from .models import CustomUser, Role, Horario, Asignatura
 from .forms import CargaMasivaForm
 
 class CustomUserAdmin(UserAdmin):
@@ -110,3 +110,65 @@ admin.site.register(CustomUser, CustomUserAdmin)
 @admin.register(Role)
 class RoleAdmin(admin.ModelAdmin):
     list_display = ('name',)
+
+@admin.register(Asignatura)
+class AsignaturaAdmin(admin.ModelAdmin):
+    list_display = ('nombre',)
+    search_fields = ('nombre',)
+
+# Registramos el modelo Horario con la funcionalidad de importación
+@admin.register(Horario)
+class HorarioAdmin(admin.ModelAdmin):
+    list_display = ('profesor', 'dia', 'hora', 'asignatura')
+    list_filter = ('profesor', 'dia', 'asignatura')
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('import-horario-csv/', self.import_csv),
+        ]
+        return my_urls + urls
+
+    def import_csv(self, request):
+        if request.method == "POST":
+            form = CargaMasivaForm(request.POST, request.FILES)
+            if form.is_valid():
+                csv_file = request.FILES["csv_file"]
+                
+                if not csv_file.name.endswith('.csv'):
+                    messages.error(request, 'El fichero no es un CSV')
+                    return redirect("..")
+
+                try:
+                    decoded_file = csv_file.read().decode('utf-8')
+                    io_string = io.StringIO(decoded_file)
+                    reader = csv.reader(io_string, delimiter=';')
+                    next(reader) # Saltar la cabecera
+
+                    horarios_creados = 0
+                    for row in reader:
+                        profesor_slug, asignatura_nombre, dia, hora = row
+                        
+                        # Obtener los objetos relacionados
+                        profesor = CustomUser.objects.get(slug=profesor_slug)
+                        asignatura, created = Asignatura.objects.get_or_create(nombre=asignatura_nombre)
+
+                        # Crear o actualizar la franja horaria
+                        horario, created = Horario.objects.update_or_create(
+                            profesor=profesor,
+                            dia=dia,
+                            hora=hora,
+                            asignatura=asignatura
+                        )
+                        if created:
+                            horarios_creados += 1
+                            
+                    messages.success(request, f"Se han importado y creado {horarios_creados} nuevas franjas horarias.")
+                except Exception as e:
+                    messages.error(request, f"Ha ocurrido un error al procesar el fichero: {e}")
+
+                return redirect("..")
+        
+        form = CargaMasivaForm()
+        payload = {"form": form, "title": "Importar Horarios desde CSV"}
+        return render(request, "admin/csv_form.html", payload)
