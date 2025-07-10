@@ -1,3 +1,4 @@
 from .user import CustomUser
 from .role import Role
-__all__ = ['CustomUser', 'Role']
+from .horario import Asignatura, Horario
+__all__ = ['CustomUser', 'Role', 'Asignatura', 'Horario']
