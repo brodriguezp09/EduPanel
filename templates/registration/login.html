@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div class="bg-neutral-900 py-8 px-4 shadow-lg sm:rounded-lg sm:px-10">
+            <!-- Sección del Logo y Título -->
+            <div class="mb-8">
+                <svg class="mx-auto h-24 w-auto text-primary-600" aria-hidden="true">
+                    <use xlink:href="#logo-albarregas"></use>
+                </svg>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-neutral-100">IES Albarregas: Login</h2>
+            </div>
+            <hr class="border-neutral-600">
+
+            {% if form.errors %}
+            <div class="rounded-md bg-red-900/50 p-4 mb-6">
+                <div class="flex">
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-300">Tu Usuario y contraseña no coinciden. Por favor,
+                            inténtalo de nuevo.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <form class="space-y-6" method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+
+                <div>
+                    <label for="id_username" class="block text-sm font-medium text-neutral-300">Usuario</label>
+                    <div class="relative mt-1">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="h-5 w-5 text-neutral-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input id="id_username" name="username" type="text" required
+                            class="block w-full rounded-md border-0 py-1.5 pl-10 text-white bg-neutral-700/50 shadow-sm ring-1 ring-inset ring-neutral-500 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="id_password" class="block text-sm font-medium text-neutral-300">Contraseña</label>
+                    <div class="relative mt-1">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg class="h-5 w-5 text-neutral-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                fill="currentColor" aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <input id="id_password" name="password" type="password" required
+                            class="block w-full rounded-md border-0 py-1.5 pl-10 text-white bg-neutral-700/50 shadow-sm ring-1 ring-inset ring-neutral-500 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6">
+                        <button type="button" id="togglePassword"
+                            class="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <svg id="eye-open" class="h-5 w-5 text-neutral-400" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path fill-rule="evenodd"
+                                    d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            <svg id="eye-closed" class="h-5 w-5 text-neutral-400 hidden"
+                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                aria-hidden="true">
+                                <path fill-rule="evenodd"
+                                    d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.955 9.955 0 00-4.542 1.059L3.707 2.293zM10 12a2 2 0 110-4 2 2 0 010 4z"
+                                    clip-rule="evenodd" />
+                                <path d="M2 10s3.939 7 8 7 8-7 8-7-3.939-7-8-7-8 7-8 7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-center">
+                    <div class="text-sm">
+                        <a href="{% url 'password_reset' %}"
+                            class="font-medium text-neutral-400 hover:text-accent-400">¿Has olvidado tu contraseña?</a>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">Iniciar
+                        Sesión</button>
+                </div>
+                <input type="hidden" name="next" value="{{ next }}">
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const togglePassword = document.getElementById('togglePassword');
+    const password = document.getElementById('id_password');
+    const eyeOpen = document.getElementById('eye-open');
+    const eyeClosed = document.getElementById('eye-closed');
+
+    togglePassword.addEventListener('click', function (e) {
+        // toggle the type attribute
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+
+        // toggle the eye icons
+        eyeOpen.classList.toggle('hidden');
+        eyeClosed.classList.toggle('hidden');
+    });
+</script>
+{% endblock %}

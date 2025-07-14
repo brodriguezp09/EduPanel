@@ -28,7 +28,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 # Third-party apps
-INSTALLED_APPS += []
+INSTALLED_APPS += [
+    'tailwind',
+    'theme',
+    'django_browser_reload',
+]
 # Custom apps
 INSTALLED_APPS += [
     'users.apps.UsersConfig'
@@ -43,6 +47,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = 'EduPanel.urls'
@@ -124,3 +129,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+TAILWIND_APP_NAME = 'theme'
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
