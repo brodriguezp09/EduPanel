@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Panel Principal{% endblock %}
+
+{% block content %}
+<!-- Cabecera de la página -->
+<div class="px-4 py-6 sm:px-0">
+    <h1 class="text-3xl font-bold text-neutral-100">¡Bienvenido de nuevo, {{ user.first_name | default:user.username }}!
+    </h1>
+    <p class="mt-2 text-lg text-neutral-400">Este es tu panel principal. Desde aquí podrás gestionar tus clases y
+        horarios.</p>
+</div>
+<!-- Fin de la cabecera -->
+
+<!-- Contenido principal -->
+<div class="mt-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Tarjeta de Horario -->
+        <div class="bg-neutral-900 overflow-hidden shadow-lg rounded-lg">
+            <div class="p-5">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 bg-primary-500 p-3 rounded-md">
+                        <!-- Icono de Calendario -->
+                        <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                        <dl>
+                            <dt class="text-sm font-medium text-neutral-400 truncate">Mi Horario</dt>
+                            <dd class="text-lg font-medium text-neutral-100">Ver horario semanal</dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-neutral-800 px-5 py-3">
+                <div class="text-sm">
+                    <a href="#" class="font-medium text-accent-400 hover:text-accent-300">Ver detalles &rarr;</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Puedes añadir más tarjetas aquí -->
+
+    </div>
+</div>
+{% endblock %}
