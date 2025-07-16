@@ -53,7 +53,7 @@ class CustomUser(AbstractUser):
     slug = models.SlugField(unique=True, max_length=100, editable=False)
     años_servicio = models.PositiveIntegerField(default=0, validators=[MaxValueValidator(60)], verbose_name='Años de Servicio')
     dias_asuntos_propios_disfrutados = models.PositiveIntegerField(default=0, verbose_name='Días de Asuntos Propios Disfrutados')
-    dias_asuntos_propios = models.PositiveIntegerField(default=0, editable=False, verbose_name='Días de Asuntos Propios Asignados')
+    dias_asuntos_propios = models.PositiveIntegerField(default=0, editable=True, verbose_name='Días de Asuntos Propios Asignados')
     roles = models.ManyToManyField(Role, blank=True, verbose_name='Roles', related_name='users')
 
     # Asignamos el gestor personalizado
@@ -66,7 +66,22 @@ class CustomUser(AbstractUser):
         return self.username
 
     def save(self, *args, **kwargs):
-        self.dias_asuntos_propios = 2 + (self.años_servicio // 5)
+        trienios = self.años_servicio // 3
+        
+        if trienios < 6:
+            total_dias = 5
+        
+        # A partir del sexto trienio (18 años), se tiene un día más.
+        total_dias = 6
+        
+        # A partir de ahí, un día más por cada 5 años adicionales de servicio.
+        años_despues_sexto_trienio = self.años_servicio - 18
+        if años_despues_sexto_trienio > 0:
+            dias_adicionales = años_despues_sexto_trienio // 5
+            total_dias += dias_adicionales
+        
+        self.dias_asuntos_propios = min(total_dias, 7)
         if not self.slug and self.email:
             self.slug = slugify(self.email.split('@')[0])
+            
         super().save(*args, **kwargs)
