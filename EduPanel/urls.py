@@ -7,4 +7,5 @@ urlpatterns = [
     path("__reload__/", include("django_browser_reload.urls")),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', user_views.home, name='home'),
+    path('asuntos_personales/', include('asuntosParticulares.urls')),
 ]

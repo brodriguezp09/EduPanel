@@ -43,7 +43,7 @@ class CustomUserAdmin(UserAdmin):
     )
     
     list_display = ('username', 'slug', 'email', 'first_name', 'last_name', 'is_staff')
-    readonly_fields = ('dias_asuntos_propios', 'slug',)
+    readonly_fields = ( 'slug',)
     filter_horizontal = ('groups', 'user_permissions', 'roles')
 
     def get_urls(self):

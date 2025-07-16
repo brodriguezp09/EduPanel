@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}Solicitar Permiso{% endblock %}
+
+{% block content %}
+
+<div x-data="{ 
+    modalOpen: false, 
+    noDaysModalOpen: false,
+    selectedDay: '', 
+    selectedDate: '', 
+    selectedShift: '',
+    diurno_disponible: 0, 
+    vespertino_disponible: 0,
+    es_sobrevenida: false,
+    puede_solicitar: {{ puede_solicitar|yesno:'true,false' }},
+    selectedWeekday: -1,
+    
+    openModal(day, date, diurno, vespertino, weekday) {
+        if (!this.puede_solicitar) {
+            this.noDaysModalOpen = true;
+            return;
+        }
+        this.selectedDay = day;
+        this.selectedDate = date;
+        this.diurno_disponible = diurno;
+        this.vespertino_disponible = vespertino;
+        this.selectedWeekday = weekday;
+        
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        const limitDate = new Date(today);
+        limitDate.setDate(today.getDate() + 15);
+        
+        const esSobrevenidaPorDefecto = new Date(date) <= limitDate;
+        this.es_sobrevenida = esSobrevenidaPorDefecto;
+        
+        const checkbox = document.getElementById('id_es_causa_sobrevenida');
+        if(checkbox) {
+            checkbox.checked = esSobrevenidaPorDefecto;
+        }
+
+        this.updateAffectedHours();
+        this.modalOpen = true;
+    },
+
+    updateAffectedHours() {
+        let hoursInput = document.getElementById('id_horas_afectadas');
+        if (this.selectedWeekday !== -1 && this.selectedShift && hoursInput) {
+            hoursInput.value = userSchedule[this.selectedWeekday][this.selectedShift] || 0;
+        } else if (hoursInput) {
+            hoursInput.value = 0;
+        }
+    }
+}">
+    <!-- Cabecera de la página -->
+    <div class="px-4 py-6 sm:px-0">
+        <div class="flex items-center">
+            <svg class="h-10 w-10 mr-4 text-primary-400" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+            </svg>
+            <h1 class="text-3xl font-bold text-neutral-100">Solicitar Día de Asuntos Particulares</h1>
+        </div>
+        <p class="mt-2 text-lg text-neutral-400">Selecciona uno de los próximos 90 días laborables para solicitar tu
+            permiso.</p>
+    </div>
+    <!-- Fin de la cabecera -->
+
+    <!-- Balance de Días -->
+    <div class="mt-4 bg-neutral-900 shadow-lg rounded-lg p-4 flex justify-around text-center">
+        <div>
+            <p class="text-sm font-medium text-neutral-400">Días Totales</p>
+            <p class="mt-1 text-2xl font-semibold text-white">{{ dias_totales_disponibles }}</p>
+        </div>
+        <div>
+            <p class="text-sm font-medium text-neutral-400">Días Solicitados</p>
+            <p class="mt-1 text-2xl font-semibold text-accent-400">{{ dias_ya_solicitados }}</p>
+        </div>
+        <div>
+            <p class="text-sm font-medium text-neutral-400">Días Restantes</p>
+            <p class="mt-1 text-2xl font-semibold text-primary-400">{{ dias_restantes }}</p>
+        </div>
+    </div>
+
+    <!-- Contenido principal del calendario -->
+    <div class="mt-8 space-y-12">
+        {% for mes in calendario_meses %}
+        <div class="month-container" x-data="{ open: true }">
+            <!-- Cabecera del Mes (Clickable) -->
+            <div @click="open = !open" class="flex items-center justify-between cursor-pointer">
+                <h2 class="text-xl font-semibold text-accent-400 capitalize">{{ mes.fecha_mes|date:"F Y" }}</h2>
+                <hr class="flex-grow border-t border-neutral-700 ml-4">
+                <svg class="h-5 w-5 text-neutral-400 ml-2 transform transition-transform" :class="{'rotate-180': !open}"
+                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
+            </div>
+
+            <!-- Contenedor del calendario (plegable) -->
+            <div x-show="open" x-transition class="mt-4">
+                <!-- Días de la semana -->
+                <div class="grid grid-cols-7 text-center text-xs font-semibold leading-6 text-neutral-400">
+                    <div>L</div>
+                    <div>M</div>
+                    <div>X</div>
+                    <div>J</div>
+                    <div>V</div>
+                    <div>S</div>
+                    <div>D</div>
+                </div>
+
+                <!-- Días del calendario -->
+                <div
+                    class="grid grid-cols-7 gap-px mt-2 bg-neutral-700 rounded-lg overflow-hidden ring-1 ring-neutral-700">
+                    {% for semana in mes.semanas %}
+                    {% for dia_info in semana %}
+                    {% if dia_info.es_laborable %}
+                    {% with disponibles_diurno=dia_info.disponibles_diurno disponibles_vespertino=dia_info.disponibles_vespertino total_disponibles=dia_info.disponibles_diurno|add:dia_info.disponibles_vespertino %}
+                    {% if total_disponibles >= 4 %}
+                    <button
+                        @click='openModal("{{ dia_info.fecha|date:"l, j \o\f F"|escapejs }}", "{{ dia_info.fecha|date:"Y-m-d" }}", {{ disponibles_diurno }}, {{ disponibles_vespertino }}, {{ dia_info.weekday }})'
+                        type="button"
+                        class="group relative bg-neutral-900 p-2 text-white hover:bg-primary-500 focus:z-10 text-center transition-colors duration-200 flex flex-col justify-center h-24 overflow-hidden">
+                        <time datetime="{{ dia_info.fecha|date:'Y-m-d' }}" class="relative font-bold text-xl">{{ dia_info.dia }}</time>
+                        <div class="relative text-xs mt-1 text-neutral-400 group-hover:text-white">
+                            <div class="sm:hidden">D: {{ disponibles_diurno }} | V: {{ disponibles_vespertino }}</div>
+                            <div class="hidden sm:block">Diurno: {{ disponibles_diurno }} | Vespertino: {{ disponibles_vespertino }}</div>
+                        </div>
+                    </button>
+                    {% elif total_disponibles >= 2 %}
+                    <button
+                        @click='openModal("{{ dia_info.fecha|date:"l, j \o\f F"|escapejs }}", "{{ dia_info.fecha|date:"Y-m-d" }}", {{ disponibles_diurno }}, {{ disponibles_vespertino }}, {{ dia_info.weekday }})'
+                        type="button"
+                        class="group relative bg-neutral-900 p-2 text-white hover:bg-accent-400 focus:z-10 text-center transition-colors duration-200 flex flex-col justify-center h-24 overflow-hidden">
+                        <div class="absolute inset-0 bg-repeat bg-center"
+                            style="background-image: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 25%, transparent 25%, transparent 50%, rgba(251, 191, 36, 0.2) 50%, rgba(251, 191, 36, 0.2) 75%, transparent 75%, transparent 100%); background-size: 8px 8px;">
+                        </div>
+                        <time datetime="{{ dia_info.fecha|date:'Y-m-d' }}" class="relative font-bold text-xl">
+                            {{ dia_info.dia }}</time>
+                        <div class="relative text-xs mt-1 text-neutral-400 group-hover:text-white">
+                            <div class="sm:hidden">D: {{ disponibles_diurno }} | V: {{ disponibles_vespertino }}</div>
+                            <div class="hidden sm:block">Diurno: {{ disponibles_diurno }} | Vespertino: {{ disponibles_vespertino }}</div>
+                        </div>
+                    </button>
+                    {% else %}
+                    <button
+                        @click='openModal("{{ dia_info.fecha|date:"l, j \o\f F"|capfirst }}", "{{ dia_info.fecha|date:"Y-m-d" }}", 0, 0, {{ dia_info.weekday }})'
+                        type="button"
+                        class="group relative bg-neutral-900/50 p-2 text-center flex flex-col justify-center h-24 overflow-hidden focus:z-10 hover:bg-red-600 transition-colors duration-200">
+                    
+                        <!-- LÍNEA AÑADIDA -->
+                        <div class="absolute inset-0 bg-repeat bg-center group-hover:hidden"
+                            style="background-image: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 25%, transparent 25%, transparent 50%, rgba(239, 68, 68, 0.2) 50%, rgba(239, 68, 68, 0.2) 75%, transparent 75%, transparent 100%); background-size: 8px 8px;">
+                        </div>
+                    
+                        <time datetime="{{ dia_info.fecha|date:'Y-m-d' }}"
+                            class="relative font-bold text-xl text-neutral-600 group-hover:text-white">{{ dia_info.dia }}</time>
+                        <div class="relative text-xs mt-1 text-red-500 group-hover:text-white">
+                            <div class="sm:hidden">
+                                <div>D: 0</div>
+                                <div>V: 0</div>
+                            </div>
+                            <div class="hidden sm:block">
+                                <div>Diurno: 0</div>
+                                <div>Vespertino: 0</div>
+                            </div>
+                        </div>
+                    </button>
+
+                    {% endif %}
+                    {% endwith %}
+                    {% elif dia_info.es_festivo %}
+                    <div
+                        class="relative bg-neutral-800 p-2 text-center cursor-not-allowed overflow-hidden flex flex-col justify-center h-24">
+                        <div class="absolute inset-0 bg-repeat bg-center"
+                            style="background-image: linear-gradient(135deg, rgba(255, 0, 0, 0.2) 25%, transparent 25%, transparent 50%, rgba(255, 0, 0, 0.2) 50%, rgba(255, 0, 0, 0.2) 75%, transparent 75%, transparent 100%); background-size: 10px 10px;">
+                        </div>
+                        <time datetime="{{ dia_info.fecha|date:'Y-m-d' }}"
+                            class="relative font-bold text-neutral-500 text-xl">{{ dia_info.dia }}</time>
+                        <p class="relative text-xs text-red-400 truncate px-1 mt-1">{{ dia_info.motivo_festivo }}</p>
+                    </div>
+                    {% else %}
+                    <div
+                        class="bg-neutral-800 text-neutral-600 p-2 text-center cursor-not-allowed opacity-50 flex flex-col justify-center h-24">
+                        <time datetime="" class="text-xl">{{ dia_info.dia|default_if_none:"&nbsp;" }}</time>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Modal para la solicitud -->
+    <div x-show="modalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true"
+        x-cloak>
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div @click="modalOpen = false" class="fixed inset-0 bg-neutral-900 bg-opacity-75 transition-opacity"
+                aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <form id="solicitud-form" method="post" action="{% url 'asuntosParticulares:solicitar_permiso' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="dia_solicitado" :value="selectedDate">
+                    <input type="hidden" name="turno_solicitado" :value="selectedShift">
+
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div
+                                class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-primary-500 sm:mx-0 sm:h-10 sm:w-10">
+                                <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M-4.5 12h22.5" />
+                                </svg>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                    Solicitar Permiso
+                                </h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500" x-text="`Día seleccionado: ${selectedDay}`"></p>
+                                </div>
+                    
+                                <div id="form-messages" class="mt-4"></div>
+                    
+                                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                    <!-- Columna 1 -->
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="{{ form.turno_solicitado.id_for_label }}"
+                                                class="block text-sm font-medium text-gray-700">Turno</label>
+                                            <select x-model="selectedShift" @change="updateAffectedHours()"
+                                                id="{{ form.turno_solicitado.id_for_label }}" name="turno_solicitado"
+                                                class="block w-full rounded-md border-0 py-1.5 text-gray-900 bg-gray-50 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6">
+                                                <option value="" disabled>-- Elige un turno --</option>
+                                                <option value="diurno" :disabled="diurno_disponible <= 0"
+                                                    x-text="`Diurno (${diurno_disponible} disponibles)`"></option>
+                                                <option value="vespertino" :disabled="vespertino_disponible <= 0"
+                                                    x-text="`Vespertino (${vespertino_disponible} disponibles)`">
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label for="{{ form.telefono.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                                {{ form.telefono.label }}
+                                            </label>
+                                            {{ form.telefono }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ form.relacion_juridica.id_for_label }}"
+                                                class="block text-sm font-medium text-gray-700">
+                                                {{ form.relacion_juridica.label }}</label>
+                                            {{ form.relacion_juridica }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ form.jornada.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                                {{ form.jornada.label }}
+                                            </label>
+                                            {{ form.jornada }}
+                                        </div>
+                                    </div>
+                    
+                                    <!-- Columna 2 -->
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label for="{{ form.horas_afectadas.id_for_label }}"
+                                                class="block text-sm font-medium text-gray-700">
+                                                {{ form.horas_afectadas.label }}</label>
+                                            {{ form.horas_afectadas }}
+                                        </div>
+                                        <div>
+                                            <label for="{{ form.dias_permiso_solicitados_centro.id_for_label }}"
+                                                class="block text-sm font-medium text-gray-700">
+                                                {{ form.dias_permiso_solicitados_centro.label }}</label>
+                                            {{ form.dias_permiso_solicitados_centro }}
+                                        </div>
+                                        <div class="pt-4 space-y-4">
+                                            <div class="flex items-start">
+                                                <div class="flex items-center h-5">{{ form.hace_sustitucion }}</div>
+                                                <div class="ml-3 text-sm"><label for="{{ form.hace_sustitucion.id_for_label }}"
+                                                        class="font-medium text-gray-700">{{ form.hace_sustitucion.label }}
+                                                    </label></div>
+                                            </div>
+                                            <div class="flex items-start">
+                                                <div class="flex items-center h-5">{{ form.retribuido }}</div>
+                                                <div class="ml-3 text-sm"><label for="{{ form.retribuido.id_for_label }}"
+                                                        class="font-medium text-gray-700">{{ form.retribuido.label }}
+                                                    </label></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                    
+                                    <!-- Fila inferior (span 2) -->
+                                    <div class="sm:col-span-2 flex items-start">
+                                        <div class="flex items-center h-5"><input id="id_es_causa_sobrevenida"
+                                                name="{{ form.es_causa_sobrevenida.name }}" type="checkbox" x-model="es_sobrevenida"
+                                                class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded">
+                                        </div>
+                                        <div class="ml-3 text-sm"><label for="{{ form.es_causa_sobrevenida.id_for_label }}" class="font-medium text-gray-700">
+                                                {{ form.es_causa_sobrevenida.label }}
+                                            </label></div>
+                                    </div>
+                                    <div class="sm:col-span-2" x-show.transition="es_sobrevenida">
+                                        <label for="{{ form.justificacion_causa_sobrevenida.id_for_label }}"
+                                            class="block text-sm font-medium text-gray-700">
+                                            {{ form.justificacion_causa_sobrevenida.label }}</label>
+                                        {{ form.justificacion_causa_sobrevenida }}
+                                    </div>
+                                    <div class="sm:col-span-2 flex items-start pt-4 border-t border-gray-200">
+                                        <div class="flex items-center h-5">{{ form.consentimiento_grabacion }}</div>
+                                        <div class="ml-3 text-sm"><label for="{{ form.consentimiento_grabacion.id_for_label }}"
+                                                class="font-medium text-gray-700">{{ form.consentimiento_grabacion.label }}</label></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                            :disabled="!selectedShift">
+                            Enviar Solicitud
+                        </button>
+                        <button @click="modalOpen = false" type="button"
+                            class="mt-3 w-full inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal "No Quedan Días" -->
+    <div x-show="noDaysModalOpen" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+        x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+        class="fixed z-50 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true"
+        x-cloak>
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div @click="noDaysModalOpen = false" class="fixed inset-0 bg-neutral-900 bg-opacity-75 transition-opacity"
+                aria-hidden="true"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div
+                class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div
+                            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">Límite de Días Alcanzado</h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Has solicitado <strong>{{ dias_ya_solicitados }}</strong> de tus <strong>{{ dias_totales_disponibles }}</strong> días de asuntos propios disponibles. No
+                                    puedes realizar más solicitudes.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button @click="noDaysModalOpen = false" type="button"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                        Entendido
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('solicitud-form');
+        const messagesDiv = document.getElementById('form-messages');
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault(); // Evitamos el envío tradicional
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Limpiamos mensajes y errores anteriores
+                    messagesDiv.innerHTML = '';
+                    document.querySelectorAll('.form-error').forEach(el => el.remove());
+
+                    if (data.success) {
+                        // Mostramos mensaje de éxito y cerramos el modal tras un breve retraso
+                        messagesDiv.innerHTML = `<div class="rounded-md bg-green-50 p-4"><p class="text-sm font-medium text-green-800">${data.message}</p></div>`;
+                        setTimeout(() => {
+                            window.location.reload(); // Recargamos la página para actualizar el calendario
+                        }, 2000);
+                    } else {
+                        // Mostramos un mensaje de error general
+                        messagesDiv.innerHTML = `<div class="rounded-md bg-red-50 p-4"><p class="text-sm font-medium text-red-800">Por favor, corrige los errores en el formulario.</p></div>`;
+
+                        // Mostramos los errores de cada campo
+                        for (const fieldName in data.errors) {
+                            const field = document.getElementById(`id_${fieldName}`);
+                            if (field) {
+                                const errorContainer = document.createElement('div');
+                                errorContainer.classList.add('form-error', 'text-xs', 'text-red-600', 'mt-1');
+                                data.errors[fieldName].forEach(error => {
+                                    const errorP = document.createElement('p');
+                                    errorP.textContent = error;
+                                    errorContainer.appendChild(errorP);
+                                });
+                                // Insertar el error después del campo
+                                field.parentNode.insertBefore(errorContainer, field.nextSibling);
+                            }
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    messagesDiv.innerHTML = `<div class="rounded-md bg-red-50 p-4"><p class="text-sm font-medium text-red-800">Ha ocurrido un error inesperado al enviar la solicitud.</p></div>`;
+                });
+        });
+    });
+</script>
+
+{% endblock %}

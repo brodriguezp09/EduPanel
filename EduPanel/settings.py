@@ -35,7 +35,8 @@ INSTALLED_APPS += [
 ]
 # Custom apps
 INSTALLED_APPS += [
-    'users.apps.UsersConfig'
+    'users.apps.UsersConfig',
+    'asuntosParticulares.apps.AsuntosparticularesConfig',
 ]
 
 
