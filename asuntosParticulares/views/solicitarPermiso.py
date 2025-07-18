@@ -41,8 +41,6 @@ def solicitar_permiso_view(request):
     dias_restantes = dias_totales_disponibles - dias_ya_solicitados
     puede_solicitar = dias_ya_solicitados < dias_totales_disponibles
     
-    print(f"puede_solicitar: {puede_solicitar}, dias_ya_solicitados: {dias_ya_solicitados}, dias_totales_disponibles: {dias_totales_disponibles}, dias_restantes: {dias_restantes}")
-    
     
     form = SolicitudPermisoForm(initial={'dias_permiso_solicitados_centro': dias_ya_solicitados})
 
@@ -52,7 +50,6 @@ def solicitar_permiso_view(request):
     festivos = {f.fecha: f.motivo for f in DiaFestivo.objects.all()}
     today = date.today()
     
-    # --- CORRECCIÓN ---
     # Ahora la búsqueda de días laborables empieza desde HOY, no desde mañana.
     dias_laborables = []
     dia_actual = today 
@@ -62,7 +59,6 @@ def solicitar_permiso_view(request):
             dias_laborables.append(dia_actual)
         dia_actual += timedelta(days=1)
         dias_revisados += 1
-    # --- FIN DE LA CORRECCIÓN ---
 
     if not dias_laborables:
         context = {

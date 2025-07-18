@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import RegexValidator,MinValueValidator, MaxValueValidator
-
+import json
+from django.utils.html import format_html
 
 class AsuntosParticulares(models.Model):
     """
@@ -151,3 +152,34 @@ class AsuntosParticulares(models.Model):
     class Meta:
         verbose_name = "Asunto Particular"
         verbose_name_plural = "Asuntos Particulares"
+        
+    def to_json(self):
+        """
+        Serializa los datos de la solicitud a un string JSON seguro para usar en JavaScript.
+        """
+        if self.estado == self.ESTADO_APROBADO:
+            estado_html = '<span class="inline-flex items-center rounded-md bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 ring-1 ring-inset ring-green-500/20">Aprobado</span>'
+        elif self.estado == self.ESTADO_PENDIENTE:
+            estado_html = '<span class="inline-flex items-center rounded-md bg-yellow-400/10 px-2 py-1 text-xs font-medium text-yellow-500 ring-1 ring-inset ring-yellow-400/20">Pendiente</span>'
+        else:
+            estado_html = '<span class="inline-flex items-center rounded-md bg-red-400/10 px-2 py-1 text-xs font-medium text-red-400 ring-1 ring-inset ring-red-400/30">Rechazado / Cancelado</span>'
+
+        return json.dumps({
+            'pk': self.pk,
+            'dia_solicitado': self.dia_solicitado.strftime('%d/%m/%Y'),
+            'turno': self.get_turno_solicitado_display(),
+            'estado': self.estado,
+            'estado_html': estado_html,
+            'fecha_solicitud': self.fecha_solicitud.strftime('%d/%m/%Y'),
+            'fecha_modificacion': self.fecha_modificacion.strftime('%d/%m/%Y'),
+            'telefono': self.telefono,
+            'relacion_juridica': self.get_relacion_juridica_display(),
+            'jornada': self.get_jornada_display(),
+            'hace_sustitucion': "Sí" if self.hace_sustitucion else "No",
+            'retribuido': "Sí" if self.retribuido else "No",
+            'es_causa_sobrevenida': "Sí" if self.es_causa_sobrevenida else "No",
+            'justificacion_causa': self.justificacion_causa_sobrevenida or "No se ha proporcionado justificación.",
+            'horas_afectadas': self.horas_afectadas,
+            'dias_permiso_solicitados_centro': self.dias_permiso_solicitados_centro,
+        })
+
