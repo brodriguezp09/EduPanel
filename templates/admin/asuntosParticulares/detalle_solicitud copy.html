@@ -1,0 +1,256 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{# --- TÍTULO PRINCIPAL DE LA PÁGINA --- #}
+{% block content_title %}
+{{ title }}
+{% endblock %}
+
+{# --- MIGAS DE PAN (BREADCRUMBS) --- #}
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+    <li class="breadcrumb-item"><a
+            href="{% url 'admin:asuntosParticulares_asuntosparticulares_changelist' %}">Solicitudes</a></li>
+    <li class="breadcrumb-item active">Detalle de Solicitud</li>
+</ol>
+{% endblock %}
+
+
+{# --- ESTILOS CSS PERSONALIZADOS PARA ESTA PÁGINA --- #}
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Estilo para el gran icono de estado central */
+    .status-icon {
+        display: inline-flex;
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+        color: #fff;
+        border-radius: 50%;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Estilo para los bloques de datos en la rejilla */
+    .detail-box {
+        margin-bottom: 1.5rem;
+    }
+
+    .detail-box h5 {
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .detail-box p {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Estilos adicionales para los botones de acción en móvil */
+    @media (max-width: 576px) {
+        .card-footer .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-footer form div {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-footer .btn-danger {
+            margin-left: 0 !important;
+        }
+    }
+</style>
+{% endblock %}
+
+
+{# --- CONTENIDO PRINCIPAL DE LA PÁGINA --- #}
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        {# MODIFICADO: Se usan clases para diferentes tamaños de pantalla #}
+        <div class="col-12 col-lg-10">
+            <div class="card card-info card-outline">
+                <div class="card-body text-center">
+
+                    {# --- Icono de Estado, Nombre y Estado --- #}
+                    {% if solicitud.estado == 'aprobado' %}
+                    <span class="status-icon bg-success"><i class="fas fa-check"></i></span>
+                    {% elif solicitud.estado == 'pendiente' %}
+                    <span class="status-icon bg-warning"><i class="fas fa-hourglass-half"></i></span>
+                    {% elif solicitud.estado == 'rechazado' %}
+                    <span class="status-icon bg-danger"><i class="fas fa-times"></i></span>
+                    {% else %}
+                    <span class="status-icon bg-secondary"><i class="fas fa-question"></i></span>
+                    {% endif %}
+
+                    <h3 class="font-weight-bold mt-2 mb-1">{{ solicitud.profesor.get_full_name }}</h3>
+                    <p class="text-muted">Estado de la Solicitud:
+                        <span class="badge 
+                            {% if solicitud.estado == 'aprobado' %}badge-success
+                            {% elif solicitud.estado == 'pendiente' %}badge-warning
+                            {% elif solicitud.estado == 'rechazado' %}badge-danger
+                            {% else %}badge-secondary{% endif %}">
+                            {{ solicitud.get_estado_display }}
+                        </span>
+                    </p>
+                    <hr>
+
+                    {% if es_primera_solicitud %}
+                    <div class="alert alert-info d-flex align-items-center justify-content-center" role="alert">
+                        <i class="fas fa-star mr-2"></i> Es su primera solicitud.
+                    </div>
+                    {% endif %}
+
+                    {# --- Rejilla de Detalles Clave --- #}
+                    <div class="row mt-4">
+                        <div class="col-md-4 detail-box">
+                            <p>Día Solicitado</p>
+                            <h5>{{ solicitud.dia_solicitado|date:"d-m-Y" }}</h5>
+                        </div>
+                        <div class="col-md-4 detail-box">
+                            <p>Turno</p>
+                            <h5>{{ solicitud.turno_solicitado }}</h5>
+                        </div>
+                        <div class="col-md-4 detail-box">
+                            <p>Última Actualización</p>
+                            <h5>{{ solicitud.fecha_modificacion|date:"d-m-Y" }}</h5>
+                        </div>
+                    </div>
+                    <hr>
+
+                    {# --- Indicadores Booleanos (Sí/No) --- #}
+                    <div class="row justify-content-center mt-3">
+                        <div class="col-12 col-sm-6 col-md-5 text-center mb-3 mb-sm-0">
+                            <strong>Permiso Retribuido</strong><br>
+                            {% if solicitud.permiso_retribuido %}
+                            <span class="badge badge-success px-3 py-1 mt-1">Sí</span>
+                            {% else %}
+                            <span class="badge badge-danger px-3 py-1 mt-1">No</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-5 text-center">
+                            <strong>Causa Sobrevenida</strong><br>
+                            {% if solicitud.es_causa_sobrevenida %}
+                            <span class="badge badge-success px-3 py-1 mt-1">Sí</span>
+                            {% else %}
+                            <span class="badge badge-danger px-3 py-1 mt-1">No</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# --- Justificación (si existe) --- #}
+                    {% if solicitud.es_causa_sobrevenida %}
+                    <div class="mt-4 text-left">
+                        <blockquote class="blockquote">
+                            <p class="mb-0 small font-italic">"{{ solicitud.justificacion_causa_sobrevenida }}"</p>
+                            <footer class="blockquote-footer">Justificación de la Causa</footer>
+                        </blockquote>
+                    </div>
+                    {% endif %}
+
+                </div>
+                {# --- Pie de Tarjeta con Botones de Acción --- #}
+                {# MODIFICADO: Se usan clases flex para apilar los botones en móvil #}
+                <div
+                    class="card-footer d-flex flex-column flex-sm-row justify-content-between align-items-center bg-light">
+                    <a href="{% url 'admin:asuntosParticulares_asuntosparticulares_changelist' %}"
+                        class="btn btn-secondary mb-2 mb-sm-0"><i class="fas fa-arrow-left mr-1"></i> Volver</a>
+                    
+                    <div>
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" name="action" value="approve" class="btn btn-success"
+                                {% if solicitud.estado == 'aprobado' %}disabled{% endif %}>
+                                <i class="fas fa-check mr-1"></i> Aceptar Petición</button>
+                            <button type="submit" name="action" value="deny" class="btn btn-danger ml-sm-2"
+                                {% if solicitud.estado == 'rechazado' %}disabled{% endif %}>
+                                <i class="fas fa-times mr-1"></i> Denegar Petición</button>
+                        </form>
+                    </div>
+                    
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# --- SEGUNDA FILA: OTRAS SOLICITUDES EN EL MISMO DÍA --- #}
+    <div class="row mt-4 justify-content-center">
+        {# MODIFICADO: Se usan clases para diferentes tamaños de pantalla #}
+        <div class="col-12 col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-users mr-2"></i>
+                        <strong>Otras Solicitudes para el {{ solicitud.dia_solicitado|date:"d/m/Y" }}</strong>
+                    </h3>
+                </div>
+                {# MODIFICADO: Se añade 'table-responsive' para la tabla en móvil #}
+                <div class="card-body p-0 table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Profesor</th>
+                                <th>Día Solicitado</th>
+                                <th>Sobrevenida</th>
+                                <th>Turno</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for otra in otras_solicitudes %}
+                            <tr>
+                                <td>{{ otra.profesor.get_full_name }}</td>
+                                <td>{{ otra.dia_solicitado|date:"d-m-Y" }}</td>
+                                <td>
+                                    {% if otra.es_causa_sobrevenida %}
+                                    <span class="badge badge-success">Sí</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">No</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ otra.get_turno_solicitado_display }}</td>
+                                <td>
+                                    {% if otra.estado == 'aprobado' %}<span class="badge badge-success">
+                                        {{ otra.estado }}</span>
+                                    {% elif otra.estado == 'pendiente' %}<span class="badge badge-warning">
+                                        {{ otra.estado }}</span>
+                                    {% elif otra.estado == 'rechazado' %}
+                                        <span class="badge badge-danger">
+                                            {{ otra.estado }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ otra.estado }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'admin:detalle_solicitud' otra.pk %}"
+                                        class="btn btn-sm btn-info" title="Ver Detalle">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted p-3">No hay otras solicitudes para este
+                                    día.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

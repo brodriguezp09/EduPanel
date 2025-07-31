@@ -103,6 +103,8 @@ class CustomUserAdmin(UserAdmin):
         
         form = CargaMasivaForm()
         payload = {"form": form}
+        payload.update(self.admin_site.each_context(request))
+
         return render(request, "admin/csv_form.html", payload)
 
 admin.site.register(CustomUser, CustomUserAdmin)
@@ -125,7 +127,7 @@ class HorarioAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
-            path('import-horario-csv/', self.import_csv),
+            path('import-horario-csv/', self.import_csv, name='users_horaio_import'),
         ]
         return my_urls + urls
 
@@ -171,4 +173,6 @@ class HorarioAdmin(admin.ModelAdmin):
         
         form = CargaMasivaForm()
         payload = {"form": form, "title": "Importar Horarios desde CSV"}
+        payload.update(self.admin_site.each_context(request))
+
         return render(request, "admin/csv_form.html", payload)

@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.urls import path
 from django.contrib import messages
 from .forms import CsvImportForm
+from .views import gestionar_permisos_view, detalle_solicitud_view
 import csv
 import io
 from datetime import datetime
@@ -36,6 +37,14 @@ class AsuntosParticularesAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('informe/', self.admin_site.admin_view(gestionar_permisos_view), name='informe_permisos'),
+            path('<int:pk>/detalle/', self.admin_site.admin_view(detalle_solicitud_view), name='detalle_solicitud'),
+        ]
+        return custom_urls + urls
 
 @admin.register(DiaFestivo)
 class DiaFestivoAdmin(admin.ModelAdmin):
@@ -94,6 +103,7 @@ class DiaFestivoAdmin(admin.ModelAdmin):
         
         form = CsvImportForm()
         payload = {"form": form, "title": "Importar Días Festivos desde CSV"}
-        return render(request, "admin/csv_form.html", payload)        
-
-
+        #context = self.admin_site.each_context(request)
+        
+        payload.update(self.admin_site.each_context(request))
+        return render(request, "admin/csv_form.html", payload)  

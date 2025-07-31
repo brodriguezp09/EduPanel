@@ -1,0 +1,122 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content_title %}
+{{ title }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+    <li class="breadcrumb-item active">{{ title }}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {# --- INICIO: Formulario de Filtro Añadido --- #}
+    <div class="card card-default mb-4">
+        <div class="card-header">
+            <h3 class="card-title">Filtros</h3>
+        </div>
+        <div class="card-body">
+            <form method="get" action="">
+                <div class="form-row align-items-end">
+                    <div class="col-md-3">
+                        <label for="id_dia_solicitado">Filtrar por Día Solicitado:</label>
+                        <input type="date" name="dia_solicitado" class="form-control" id="id_dia_solicitado"
+                            value="{{ dia_filtrado|default:'' }}">
+                    </div>
+                    <div class="col-md-9">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search mr-1"></i> Filtrar
+                        </button>
+                        <a href="." class="btn btn-secondary ml-2">
+                            <i class="fas fa-eraser mr-1"></i> Limpiar Filtro
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {# --- FIN: Formulario de Filtro --- #}
+
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body table-responsive p-0">
+                    <table id="result_list" class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Profesor</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Día Solicitado</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Turno</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Fecha de Solicitud</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Acciones</a>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for solicitud in solicitudes %}
+                            <tr role="row" class="even">
+                                <td>{{ solicitud.profesor.get_full_name|default:solicitud.profesor.username }}</td>
+                                <td>{{ solicitud.dia_solicitado|date:"d/m/Y" }}</td>
+                                <td>{{ solicitud.get_turno_solicitado_display }}</td>
+                                <td>{{ solicitud.fecha_solicitud|date:"d/m/Y" }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'admin:detalle_solicitud' solicitud.pk %}"
+                                        class="btn btn-sm btn-info" data-toggle="tooltip" title="Ver Detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'admin:detalle_solicitud' solicitud.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="approve">
+                                        <button type="submit" class="btn btn-sm btn-success ml-1" data-toggle="tooltip" title="Aprobar Solicitud">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'admin:detalle_solicitud' solicitud.pk %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="deny">
+                                        <button type="submit" class="btn btn-sm btn-danger ml-1" data-toggle="tooltip" title="Eliminar Solicitud">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted p-4">No hay solicitudes pendientes para
+                                    los filtros seleccionados.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
