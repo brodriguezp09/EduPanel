@@ -20,6 +20,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -139,3 +140,70 @@ TAILWIND_APP_NAME = 'theme'
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+JAZZMIN_SETTINGS = {
+    "site_title": "Portal I.E.S Albarregas",
+    "site_header": "IES. Albarregas",
+    "site_brand": "Admin IES. Albarregas",
+    
+    "user_avatar": None,
+    "show_recent_actions": False, 
+    
+    
+    #############
+    # Side Menu #
+    #############    
+    "show_sidebar": True,
+    "navigation_expanded": True,
+
+    # Hide these apps when generating side menu e.g (auth)
+    "hide_apps": ["auth"],
+
+    # Hide these models when generating side menu (e.g auth.user)
+    "hide_models": [],
+    
+    "custom_links": {
+    
+        "asuntosparticulares":[{
+            "name": "Solicitudes Pendientes",
+            "url": "admin:informe_permisos",
+            "icon": "fas fa-list-check",
+           # "permissions": ["asuntosParticulares.view_asuntosparticulares"]
+        },
+        {
+            "name": "Solicitudes Totales",
+            "url": "admin:informe_permisos_totales",
+            "icon": "fas fa-file-lines",
+           # "permissions": ["asuntosParticulares.view_asuntosparticulares"]
+        }
+        ],
+
+    },
+
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "users.CustomUser": "fas fa-user",
+        "users.Asignatura": "fas fa-book",
+        "users.Horario": "fas fa-clock",
+        "users.Role": "fas fa-users-cog",
+        "asuntosParticulares.AsuntosParticulares": "fas fa-umbrella-beach",
+        "asuntosParticulares.DiaFestivo": "fas fa-calendar-check",
+        
+    },
+    "copyright": "I.E.S Albarregas",
+    "show_powered_by": False,
+    
+}
+
+JAZZMIN_UI_TWEAKS = {
+   "navbar_fixed": True,      
+    "sidebar_fixed": True,    
+    "footer_fixed": False, 
+}
+
+# Email settings
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')

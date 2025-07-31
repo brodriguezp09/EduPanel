@@ -2,4 +2,7 @@
 from django import forms
 
 class CargaMasivaForm(forms.Form):
-    csv_file = forms.FileField(label="Fichero CSV")
+    csv_file = forms.FileField(
+        label="Fichero CSV",
+        widget=forms.FileInput(attrs={'class': 'custom-file-input'})
+    )

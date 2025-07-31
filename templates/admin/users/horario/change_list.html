@@ -1,9 +1,9 @@
 {% extends "admin/change_list.html" %}
 {% block object-tools-items %}
 {{ block.super }}
-<li>
-    <a href="import-horario-csv/" class="addlink">
-        Importar Horarios desde CSV
-    </a>
-</li>
+<a href="{% url 'admin:users_horaio_import' %}" class="btn btn-warning float-right">
+    <i class="fa fa-file"></i>
+    Importar desde CSV
+</a>
 {% endblock %}
+

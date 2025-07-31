@@ -2,7 +2,6 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import RegexValidator,MinValueValidator, MaxValueValidator
 import json
-from django.utils.html import format_html
 
 class AsuntosParticulares(models.Model):
     """
@@ -53,11 +52,11 @@ class AsuntosParticulares(models.Model):
         related_name='asuntos_particulares',
         verbose_name="Profesor"
     )
-    fecha_solicitud = models.DateField(
+    fecha_solicitud = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Fecha de Solicitud"
     )
-    fecha_modificacion = models.DateField(
+    fecha_modificacion = models.DateTimeField(
         auto_now=True,
         verbose_name="Última Modificación"
     )
@@ -152,6 +151,7 @@ class AsuntosParticulares(models.Model):
     class Meta:
         verbose_name = "Asunto Particular"
         verbose_name_plural = "Asuntos Particulares"
+        ordering = ['-dia_solicitado', 'pk']
         
     def to_json(self):
         """
