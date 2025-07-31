@@ -4,7 +4,7 @@ from django.contrib import admin
 from asuntosParticulares.models import AsuntosParticulares
 
 @staff_member_required
-def gestionar_permisos_view(request):
+def listar_solicitudes_pendientes_view(request):
     
     # 1. Obtenemos el valor del filtro de fecha desde la URL (parámetro GET)
     dia_filtrar = request.GET.get('dia_solicitado', None)

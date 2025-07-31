@@ -1,0 +1,196 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content_title %}
+{{ title }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+    <li class="breadcrumb-item active">{{ title }}</li>
+</ol>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    {# --- INICIO: Formulario de Filtro Añadido --- #}
+    <div class="card card-default mb-4" style="border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px;">
+        <div class="card-header" style="background: #f7f7f7; padding: 10px 15px; border-bottom: 1px solid #ddd;">
+            <h3 class="card-title" style="margin: 0; font-size: 1.1em;">Filtros</h3>
+        </div>
+        <div class="card-body" style="padding: 15px;">
+            <form method="get" action="">
+                <div class="form-row align-items-center" style="display: flex; gap: 15px; align-items: flex-end;">
+    
+                    <div class="col-md-3" style="flex: 1;">
+                        <label for="id_dia_solicitado">Día Solicitado:</label>
+                        <input type="date" name="dia_solicitado" class="form-control" id="id_dia_solicitado"
+                            value="{{ dia_filtrado|default:'' }}" style="width: 100%; padding: 8px;">
+                    </div>
+    
+                    <div class="col-md-5" style="flex: 1;">
+                        <label for="id_profesor">Profesor:</label>
+                        <select name="profesor" id="id_profesor" class="form-control col-md-8" style="width: 100%; padding: 8px;">
+                            <option value="">-- Todos --</option>
+                            {% for p in profesores %}
+                            <option value="{{ p.id }}" {% if p.id|stringformat:"s" == profesor_filtrado %}selected{% endif %}>
+                                {{ p.get_full_name|default:p.username }}       
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+    
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search mr-1"></i> Filtrar
+                        </button>
+                        <a href="{% url 'admin:informe_permisos_totales' %}"  class="btn btn-secondary ml-2">
+                            <i class="fas fa-eraser mr-1"></i> Limpiar Filtro
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    {# --- FIN: Formulario de Filtro --- #}
+
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body table-responsive p-0">
+                    <table id="result_list" class="table table-striped">
+                        <thead class="text-center">
+                            <tr>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Profesor</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Día solicitado</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Turno</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Fecha de solicitud</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Estado</a>
+                                    </div>
+                                </th>
+                                <th class="sorting" tabindex="0" rowspan="1" colspan="1">
+                                    <div class="text">
+                                        <a>Ver en detalle</a>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-center">
+                            {% for solicitud in solicitudes %}
+                            <tr role="row" class="even">
+                                <td>{{ solicitud.profesor.get_full_name|default:solicitud.profesor.username }}</td>
+                                <td>{{ solicitud.dia_solicitado|date:"d/m/Y" }}</td>
+                                <td>{{ solicitud.get_turno_solicitado_display }}</td>
+                                <td>{{ solicitud.fecha_solicitud|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if solicitud.estado == 'pendiente' %}
+                                    <span class="badge badge-warning">{{ solicitud.get_estado_display }}</span>
+                                    {% elif solicitud.estado == 'aprobado' %}
+                                    <span class="badge badge-success">{{ solicitud.get_estado_display }}</span>
+                                    {% elif solicitud.estado == 'rechazado' %}
+                                    <span class="badge badge-danger">{{ solicitud.get_estado_display }}</span>
+                                    {% else %}
+                                    <span class="badge badge-secondary">{{ solicitud.get_estado_display }}</span>
+                                    {% endif %}                           
+                                </td>
+                                <td>
+                                    <a href="{% url 'admin:detalle_solicitud' solicitud.pk %}" class="btn btn-sm btn-info" data-toggle="tooltip"
+                                        title="Ver Detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted p-4">No hay solicitudes pendientes para
+                                    los filtros seleccionados.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {# ============================================= #}
+    {# == CONTROLES DE PAGINACIÓN == #}
+    {# ============================================= #}
+    {% if is_paginated %}
+    <nav aria-label="Navegación de páginas" class="align-items-center d-flex justify-content-center mt-4">
+        <ul class="pagination">
+    
+            {# Botón 'Anterior' #}
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.previous_page_number }}&dia_solicitado={{ dia_filtrado }}&profesor={{ profesor_filtrado }}"
+                    aria-label="Anterior">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-label="Anterior">
+                    <span aria-hidden="true">&laquo;</span>
+                </span>
+            </li>
+            {% endif %}
+    
+            {# Números de página #}
+            {% for page_num in page_obj.paginator.page_range %}
+            {% if page_obj.number == page_num %}
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_num }}&dia_solicitado={{ dia_filtrado }}&profesor={{ profesor_filtrado }}">{{ page_num }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+    
+            {# Botón 'Siguiente' #}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="?page={{ page_obj.next_page_number }}&dia_solicitado={{ dia_filtrado }}&profesor={{ profesor_filtrado }}"
+                    aria-label="Siguiente">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link" aria-label="Siguiente">
+                    <span aria-hidden="true">&raquo;</span>
+                </span>
+            </li>
+            {% endif %}
+    
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -151,6 +151,7 @@ class AsuntosParticulares(models.Model):
     class Meta:
         verbose_name = "Asunto Particular"
         verbose_name_plural = "Asuntos Particulares"
+        ordering = ['-dia_solicitado', 'pk']
         
     def to_json(self):
         """

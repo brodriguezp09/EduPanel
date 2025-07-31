@@ -166,9 +166,16 @@ JAZZMIN_SETTINGS = {
         "asuntosparticulares":[{
             "name": "Solicitudes Pendientes",
             "url": "admin:informe_permisos",
-            "icon": "fas fa-gavel",
+            "icon": "fas fa-list-check",
            # "permissions": ["asuntosParticulares.view_asuntosparticulares"]
-        }],
+        },
+        {
+            "name": "Solicitudes Totales",
+            "url": "admin:informe_permisos_totales",
+            "icon": "fas fa-file-lines",
+           # "permissions": ["asuntosParticulares.view_asuntosparticulares"]
+        }
+        ],
 
     },
 
@@ -178,12 +185,21 @@ JAZZMIN_SETTINGS = {
         "users.Asignatura": "fas fa-book",
         "users.Horario": "fas fa-clock",
         "users.Role": "fas fa-users-cog",
-        "asuntosParticulares.AsuntosParticulares": "fas fa-file-alt",
+        "asuntosParticulares.AsuntosParticulares": "fas fa-umbrella-beach",
         "asuntosParticulares.DiaFestivo": "fas fa-calendar-check",
         
     },
+    "copyright": "I.E.S Albarregas",
+    "show_powered_by": False,
     
 }
+
+JAZZMIN_UI_TWEAKS = {
+   "navbar_fixed": True,      
+    "sidebar_fixed": True,    
+    "footer_fixed": False, 
+}
+
 # Email settings
 EMAIL_BACKEND = config('EMAIL_BACKEND')
 EMAIL_HOST = config('EMAIL_HOST')
