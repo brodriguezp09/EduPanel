@@ -31,6 +31,11 @@ def cancelar_solicitud_view(request, pk):
 
         if solicitud.estado == AsuntosParticulares.ESTADO_PENDIENTE:            
             solicitud.delete()
+            usuario = request.user
+            # Restablece los días disfrutados si la solicitud se cancela
+            if usuario.dias_asuntos_propios_disfrutados > 0:
+                usuario.dias_asuntos_propios_disfrutados = max(0, usuario.dias_asuntos_propios_disfrutados - 1)
+                usuario.save()
             messages.success(request, 'La solicitud ha sido cancelada correctamente.')
         else:
             messages.error(request, 'No se puede cancelar una solicitud que ya ha sido procesada.')
