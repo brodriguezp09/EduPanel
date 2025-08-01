@@ -1,7 +1,8 @@
 from .diaFestivo import DiaFestivo
-from .asuntosParticulares import AsuntosParticulares
+from .asuntosParticulares import AsuntosParticulares, validar_solo_pdf
 
 __all__ = [
     "DiaFestivo",
-    "AsuntosParticulares"
+    "AsuntosParticulares",
+    "valida_solo_pdf"
 ]

@@ -16,7 +16,7 @@ def solicitar_permiso_view(request):
     if request.method == 'POST':
         # ... (La lógica del POST se mantiene igual)
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            form = SolicitudPermisoForm(request.POST)
+            form = SolicitudPermisoForm(request.POST, request.FILES)
             if form.is_valid():
                 solicitud = form.save(commit=False)
                 solicitud.profesor = request.user

@@ -47,9 +47,15 @@
 
     updateAffectedHours() {
         let hoursInput = document.getElementById('id_horas_afectadas');
-        if (this.selectedWeekday !== -1 && this.selectedShift && hoursInput) {
-            hoursInput.value = userSchedule[this.selectedWeekday][this.selectedShift] || 0;
-        } else if (hoursInput) {
+        
+        // Comprobamos que el input exista para evitar errores
+        if (!hoursInput) return;
+    
+        // 👇 CAMBIO CLAVE: Usa this.userSchedule para acceder a los datos del componente
+        if (this.selectedWeekday !== -1 && this.selectedShift && this.userSchedule) {
+            // Accede a los datos usando 'this'
+            hoursInput.value = this.userSchedule[this.selectedWeekday][this.selectedShift] || 0;
+        } else {
             hoursInput.value = 0;
         }
     }
@@ -255,11 +261,8 @@
                                                 id="{{ form.turno_solicitado.id_for_label }}" name="turno_solicitado"
                                                 class="block w-full rounded-md border-0 py-1.5 text-gray-900 bg-gray-50 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-primary-500 sm:text-sm sm:leading-6">
                                                 <option value="" disabled>-- Elige un turno --</option>
-                                                <option value="diurno" :disabled="diurno_disponible <= 0"
-                                                    x-text="`Diurno (${diurno_disponible} disponibles)`"></option>
-                                                <option value="vespertino" :disabled="vespertino_disponible <= 0"
-                                                    x-text="`Vespertino (${vespertino_disponible} disponibles)`">
-                                                </option>
+                                                <option value="diurno" :disabled="diurno_disponible <= 0" x-text="`Diurno (${diurno_disponible} disponibles)`"></option>
+                                                <option value="vespertino" :disabled="vespertino_disponible <= 0" x-text="`Vespertino (${vespertino_disponible} disponibles)`"></option>
                                             </select>
                                         </div>
                                         <div>
@@ -305,9 +308,11 @@
                                             </div>
                                             <div class="flex items-start">
                                                 <div class="flex items-center h-5">{{ form.retribuido }}</div>
-                                                <div class="ml-3 text-sm"><label for="{{ form.retribuido.id_for_label }}"
+                                                <div class="ml-3 text-sm">
+                                                    <label for="{{ form.retribuido.id_for_label }}"
                                                         class="font-medium text-gray-700">{{ form.retribuido.label }}
-                                                    </label></div>
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -325,9 +330,37 @@
                                     <div class="sm:col-span-2" x-show.transition="es_sobrevenida">
                                         <label for="{{ form.justificacion_causa_sobrevenida.id_for_label }}"
                                             class="block text-sm font-medium text-gray-700">
-                                            {{ form.justificacion_causa_sobrevenida.label }}</label>
-                                        {{ form.justificacion_causa_sobrevenida }}
+                                            {{ form.justificacion_causa_sobrevenida.label }}
+                                        </label>
                                     </div>
+                                    
+
+                                    <div id="field-container-archivo_adjunto" class="sm:col-span-2" x-show.transition="es_sobrevenida">
+                                        <!-- 1. Etiqueta principal del campo -->
+                                        <label for="{{ form.archivo_adjunto.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                                            {{ form.archivo_adjunto.label }}
+                                        </label>
+                                    
+                                        <div class="mt-1 flex items-center">
+                                            <!-- 2. El input de archivo original, oculto pero funcional -->
+                                            <div class="hidden">
+                                                {{ form.archivo_adjunto }}
+                                            </div>
+                                    
+                                            <!-- 3. La etiqueta que parece un botón -->
+                                            <label for="{{ form.archivo_adjunto.id_for_label }}"
+                                                class="cursor-pointer rounded-md border border-gray-300 bg-white py-2 px-3 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                                <span>Seleccionar archivo</span>
+                                            </label>
+                                    
+                                            <!-- 4. Un espacio para mostrar el nombre del archivo seleccionado -->
+                                            <span id="file-name-display" class="ml-3 text-sm text-gray-500">Ningún archivo seleccionado.</span>
+                                        </div>                              
+                                    </div>
+
+
+
+                                    
                                     <div class="sm:col-span-2 flex items-start pt-4 border-t border-gray-200">
                                         <div class="flex items-center h-5">{{ form.consentimiento_grabacion }}</div>
                                         <div class="ml-3 text-sm"><label for="{{ form.consentimiento_grabacion.id_for_label }}"
@@ -433,8 +466,14 @@
                         messagesDiv.innerHTML = `<div class="rounded-md bg-red-50 p-4"><p class="text-sm font-medium text-red-800">Por favor, corrige los errores en el formulario.</p></div>`;
 
                         // Mostramos los errores de cada campo
+                        console.log(data.errors);
                         for (const fieldName in data.errors) {
-                            const field = document.getElementById(`id_${fieldName}`);
+                            let field = null;
+                            if (fieldName === "archivo_adjunto"){
+                                field = document.getElementById("field-container-archivo_adjunto");
+                            }else{
+                                field = document.getElementById(`id_${fieldName}`);
+                            }
                             if (field) {
                                 const errorContainer = document.createElement('div');
                                 errorContainer.classList.add('form-error', 'text-xs', 'text-red-600', 'mt-1');
@@ -443,8 +482,11 @@
                                     errorP.textContent = error;
                                     errorContainer.appendChild(errorP);
                                 });
+                                console.log(errorContainer)
+                                console.log(field)
                                 // Insertar el error después del campo
                                 field.parentNode.insertBefore(errorContainer, field.nextSibling);
+                                console.log("iiiiiiii");
                             }
                         }
                     }
@@ -455,6 +497,20 @@
                 });
         });
     });
+
+    
+    // Busca el input de archivo por su ID
+    const fileInput = document.getElementById('{{ form.archivo_adjunto.id_for_label }}');
+    // Busca el span donde mostraremos el nombre
+    const fileNameDisplay = document.getElementById('file-name-display');
+
+    // Añade un 'escuchador' que se activa cuando el usuario selecciona un archivo
+    fileInput.addEventListener('change', function(e) {
+    // Si se selecciona un archivo, muestra su nombre. Si no, muestra el texto por defecto.
+    const fileName = e.target.files[0] ? e.target.files[0].name : 'Ningún archivo seleccionado.';
+            fileNameDisplay.textContent = fileName;
+    });
+    
 </script>
 
 {% endblock %}
