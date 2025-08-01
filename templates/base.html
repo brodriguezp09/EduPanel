@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 {% load static tailwind_tags %}
-{% include "svg/icons.svg" %}
 <html lang="es" class="h-full bg-neutral-800">
 
 <head>
@@ -17,6 +16,7 @@
 </head>
 
 <body class="h-full">
+    {% include "svg/icons.svg" %}
     <div x-data="{ sidebarOpen: false }">
         <!-- Menú horizontal (barra superior fija) -->
         {% include 'includes/horizontal_nav.html' %}
