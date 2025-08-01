@@ -2,6 +2,41 @@ from django.db import models
 from django.conf import settings
 from django.core.validators import RegexValidator,MinValueValidator, MaxValueValidator
 import json
+import os
+from django.core.exceptions import ValidationError
+
+from django.utils import timezone
+
+def validar_solo_pdf(value):
+    """
+    Validador para permitir únicamente archivos con extensión .pdf.
+    """
+    ext = os.path.splitext(value.name)[1]  # Obtiene la extensión del archivo
+    if ext.lower() != '.pdf':
+        raise ValidationError('Formato de archivo no válido. Solo se permiten archivos PDF.')
+
+def ruta_archivo(instance, filename):
+    """
+    Genera un nombre de archivo único usando el nombre del profesor y una marca de tiempo.
+    Ejemplo: /justificantes/borja_rodriguez_20250731_200615.pdf
+    """
+    # 1. Obtener el nombre y apellido del profesor
+    # Se usa 'SinNombre' como valor por defecto si los campos están vacíos
+    first_name = instance.profesor.first_name or 'SinNombre'
+    last_name = instance.profesor.last_name or 'SinApellido'
+    
+    # 2. Obtener la extensión del archivo original
+    extension = os.path.splitext(filename)[1]
+    
+    # 3. Crear la marca de tiempo
+    timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+    
+    # 4. Construir el nuevo nombre del archivo
+    nuevo_nombre = f"{first_name.lower()}_{last_name.lower()}_{timestamp}{extension}"
+    
+    # 5. Devolver la ruta completa (dentro de una carpeta, por ejemplo)
+    return os.path.join('justificantes', nuevo_nombre)
+
 
 class AsuntosParticulares(models.Model):
     """
@@ -142,6 +177,15 @@ class AsuntosParticulares(models.Model):
         default=ESTADO_PENDIENTE,
         verbose_name="Estado de la Solicitud"
     )
+    
+    archivo_adjunto = models.FileField(
+        upload_to=ruta_archivo,
+        blank=True,
+        null=True,
+        verbose_name="Documento Justificativo en PDF",
+        help_text="Sube un documento PDF que justifique tu solicitud sobrevenida.",
+        validators=[validar_solo_pdf]
+    )
 
 
     def __str__(self):
@@ -182,4 +226,5 @@ class AsuntosParticulares(models.Model):
             'horas_afectadas': self.horas_afectadas,
             'dias_permiso_solicitados_centro': self.dias_permiso_solicitados_centro,
         })
+
 

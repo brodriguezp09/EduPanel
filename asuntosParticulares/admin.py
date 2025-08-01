@@ -27,7 +27,7 @@ class AsuntosParticularesAdmin(admin.ModelAdmin):
             'fields': ('estado','dia_solicitado', 'turno_solicitado','jornada', 'relacion_juridica', 'hace_sustitucion', 'retribuido', 'horas_afectadas')
         }),
         ('Causa Sobrevenida', {
-            'fields': ('es_causa_sobrevenida', 'justificacion_causa_sobrevenida')
+            'fields': ('es_causa_sobrevenida', 'justificacion_causa_sobrevenida', 'archivo_adjunto')
         }),
         ('Información Adicional', {
             'fields': ('dias_permiso_solicitados_centro', 'consentimiento_grabacion')

@@ -152,13 +152,25 @@
                     </div>
 
                     {# --- Justificación (si existe) --- #}
+
                     {% if solicitud.es_causa_sobrevenida %}
-                    <div class="mt-4 text-left">
+                    <div class="mt-4 text-center">
                         <blockquote class="blockquote">
+                            <header class="col-md-6 detail-box mx-auto">
+                                <p>Justificación de la Causa Sobrevenida</p>
+                            </header>
                             <p class="mb-0 small font-italic">"{{ solicitud.justificacion_causa_sobrevenida }}"</p>
-                            <footer class="blockquote-footer">Justificación de la Causa</footer>
+                                {% if solicitud.archivo_adjunto %}
+                                <a href="{{ solicitud.archivo_adjunto.url }}" class="btn btn-sm btn-primary" target="_blank" data-toggle="tooltip"
+                                    title="Descargar Justificación">
+                                    <i class="fas fa-file-pdf mr-1"></i> Descargar Justificación
+                                </a>
+                                {% else %}
+                                <span class="text-muted">No se ha adjuntado ningún archivo.</span>
+                                {% endif %}
                         </blockquote>
                     </div>
+
                     {% endif %}
 
                 </div>
