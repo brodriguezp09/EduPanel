@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'colorfield',
 ]
 # Third-party apps
 INSTALLED_APPS += [
@@ -38,6 +39,7 @@ INSTALLED_APPS += [
 INSTALLED_APPS += [
     'users.apps.UsersConfig',
     'asuntosParticulares.apps.AsuntosparticularesConfig',
+    'documento.apps.DocumentoConfig',
 ]
 
 
@@ -187,6 +189,8 @@ JAZZMIN_SETTINGS = {
         "users.Role": "fas fa-users-cog",
         "asuntosParticulares.AsuntosParticulares": "fas fa-umbrella-beach",
         "asuntosParticulares.DiaFestivo": "fas fa-calendar-check",
+        "documento.CategoriaDocumento": "fas fa-folder",
+        "documento.PlantillaDocumento": "fas fa-file-alt",
         
     },
     "copyright": "I.E.S Albarregas",
