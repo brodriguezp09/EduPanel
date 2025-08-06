@@ -4,5 +4,5 @@ from .views import DocumentoListView
 app_name = 'documento'
 
 urlpatterns = [
-    path('documentos/', DocumentoListView.as_view(), name='documento_list'),
+    path('', DocumentoListView.as_view(), name='documento_list'),
 ]

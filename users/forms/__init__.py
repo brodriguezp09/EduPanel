@@ -1,2 +1,3 @@
 from .CargaMasivaForm import CargaMasivaForm
-__all__ = ['CargaMasivaForm']
+from .CambioPassUser import CustomPasswordChangeForm
+__all__ = ['CargaMasivaForm', 'CustomPasswordChangeForm']
