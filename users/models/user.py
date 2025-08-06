@@ -85,3 +85,8 @@ class CustomUser(AbstractUser):
             self.slug = slugify(self.email.split('@')[0])
             
         super().save(*args, **kwargs)
+    
+    @property
+    def dias_asuntos_propios_restantes(self):
+        print("calculando días restantes")
+        return self.dias_asuntos_propios - self.dias_asuntos_propios_disfrutados

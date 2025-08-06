@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Perfil de {{ profesor.get_full_name|default:profesor.username }}{% endblock %}
+
+{% block content %}
+<div class="px-4 py-6 sm:px-6 lg:px-8">
+    <!-- Encabezado del Perfil -->
+    <div class="mb-8">
+        <div class="flex items-center">
+            <svg class="h-10 w-10 mr-4 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            <h1 class="text-3xl font-bold text-neutral-100">{{ profesor.get_full_name|default:profesor.username }}</h1>
+        </div>
+        <hr class="mt-2 border-t border-neutral-700">
+    </div>
+
+    <!-- Contenedor principal con una sola tarjeta -->
+    <div class="bg-neutral-900 shadow-lg rounded-lg p-6 lg:p-8">
+
+        <!-- Sección de Información de Contacto -->
+        <h2 class="flex items-center text-xl font-semibold text-neutral-100 border-b border-neutral-700 pb-3 mb-4">
+            <svg class="h-6 w-6 text-neutral-100" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zM8.25 9h-3v3h3V9z" />      
+                </svg>
+                &nbsp;Información de Contacto
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div>
+                <p class="text-sm font-medium text-neutral-400">Nombre de usuario</p>
+                <p class="mt-1 text-md text-neutral-200">{{ profesor.username }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-neutral-400">Correo Electrónico</p>
+                <p class="mt-1 text-md text-neutral-200">{{ profesor.email }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-neutral-400">Nombre Completo</p>
+                <p class="mt-1 text-md text-neutral-200">{{ profesor.get_full_name|default:"No especificado" }}</p>
+            </div>
+        </div>
+
+        <!-- Sección de Detalles de la Cuenta -->
+        <h2 class="flex items-center text-xl font-semibold text-neutral-100 border-b border-neutral-700 pb-3 mb-4">
+            <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M8.25 6.75h7.5M8.25 12h7.5m-7.5 5.25h7.5M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 17.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+            </svg>
+            &nbsp; Detalles de la Cuenta
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div>
+                <p class="text-sm font-medium text-neutral-400">Años de servicio</p>
+                <p class="mt-1 text-md text-neutral-200">{{ profesor.años_servicio }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-neutral-400">Último Acceso</p>
+                <p class="mt-1 text-md text-neutral-200">{{ profesor.last_login|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div>
+                <p class="text-sm font-medium text-neutral-400">Balance en días de tus asuntos particulares</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div>
+                <p class="text-sm text-neutral-400">
+                    Disponibles: <span class="ml-1 font-semibold text-white">{{ profesor.dias_asuntos_propios }}</span>
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-neutral-400">
+                    Solicitados: <span class="ml-1 font-semibold text-accent-400">{{ profesor.dias_asuntos_propios_disfrutados }}</span>
+                </p>
+            </div>
+            <div>
+                <p class="text-sm text-neutral-400">
+                    Restantes: <span class="ml-1 font-semibold text-primary-500">{{ profesor.dias_asuntos_propios_restantes }}</span>
+                </p>
+            </div>    
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+                <p class="text-sm font-medium text-neutral-400">Fecha de Registro</p>
+                <p class="mt-1 text-md text-neutral-200">{{ profesor.date_joined|date:"d/m/Y H:i" }}</p>
+            </div>
+            
+        </div>
+
+        <!-- Sección de Seguridad y Acciones -->
+        
+        <h2 class="flex items-center text-xl font-semibold text-neutral-100 border-b border-neutral-700 pb-3 mb-4 mt-6">
+            <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M16.5 10.5V6.75a4.5 4.5 0 00-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H4.5a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+            &nbsp;Seguridad
+        </h2>
+        <div>
+            <a href="{% url 'users:password_change' %}"
+                class="text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors">
+                Cambiar contraseña
+            </a>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

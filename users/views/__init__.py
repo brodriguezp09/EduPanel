@@ -1,2 +1,4 @@
 from .home import home
-__all__ = ['home']
+from .userDetailView import UserDetailView
+from .CustomPasswordChangeView import CustomPasswordChangeView
+__all__ = ['home', 'UserDetailView', 'CustomPasswordChangeView']
