@@ -39,6 +39,7 @@ INSTALLED_APPS += [
 INSTALLED_APPS += [
     'users.apps.UsersConfig',
     'asuntosParticulares.apps.AsuntosparticularesConfig',
+#    'ausencias.apps.AusenciasConfig',
     'documento.apps.DocumentoConfig',
 ]
 

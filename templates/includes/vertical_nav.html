@@ -101,6 +101,7 @@
         </ul>
         <div>
             <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
                 <button type="submit"
                     class="w-full flex items-center p-2 text-neutral-300 rounded-lg hover:bg-neutral-700 hover:text-white group text-left">
                     <svg class="w-5 h-5 text-neutral-500 transition duration-75 group-hover:text-primary-400"
